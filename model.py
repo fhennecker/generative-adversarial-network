@@ -9,61 +9,59 @@ class DCGAN():
             self.n_classes = n_classes
             self.image_size = image_size
 
+            self.label = tf.placeholder(tf.int32, [self.batch_size], name='label')
+            self.label_onehot = tf.one_hot(self.label, self.n_classes)
+            self.label_map = tf.reshape(
+                    self.label_onehot, [self.batch_size, 1, 1, self.n_classes])
+
+            self.real_images = tf.placeholder(
+                tf.float32,
+                [self.batch_size, self.image_size, self.image_size, 1],
+                name='real_images')
+            
+            self.mask = tf.placeholder(tf.int32, [self.batch_size], 'mask')
+            self.mask_onehot = tf.one_hot(self.mask, 2)
+
             with tf.variable_scope("generate"):
                 self._init_generate()
             with tf.variable_scope("discriminate"):
                 self._init_discriminate()
 
-        print(self.generations.name)
+            self._init_losses()
 
     def _init_generate(self):
         self.random = tf.placeholder(tf.float32, [self.batch_size, 100])
-        self.g_label = tf.placeholder(tf.int32, [self.batch_size])
-        label_onehot = tf.one_hot(self.g_label, self.n_classes)
-        # label_map is used to append feature maps of 0s and 1s to conv layers
-        label_map = tf.reshape(
-            label_onehot,
-            [self.batch_size, 1, 1, self.n_classes])
 
         # TODO batch normalise
         h1 = slim.fully_connected(
-            tf.concat([self.random, label_onehot], 1),
+            tf.concat([self.random, self.label_onehot], 1),
             512)
         h2 = slim.fully_connected(
-            tf.concat([h1, label_onehot], 1),
+            tf.concat([h1, self.label_onehot], 1),
             128 * 7 * 7)
         h2 = tf.reshape(h2, [self.batch_size, 7, 7, 128])
         h2 = tf.concat(
-            [h2, label_map * tf.ones([self.batch_size, 7, 7, self.n_classes])],
+            [h2, self.label_map * tf.ones([self.batch_size, 7, 7, self.n_classes])],
             3)
 
         c1 = slim.conv2d_transpose(h2, 64, [5, 5], 2)
         c1 = tf.concat(
-            [c1, label_map * tf.ones([self.batch_size, 14, 14, self.n_classes])],
+            [c1, self.label_map * tf.ones([self.batch_size, 14, 14, self.n_classes])],
             3)
         self.generations = slim.conv2d_transpose(c1, 1, [5, 5], 2)
 
+
     def _init_discriminate(self):
-        self.discriminate_input = tf.placeholder(
-            tf.float32,
-            [self.batch_size, self.image_size, self.image_size, 1])
-
-        self.discriminate_label = tf.placeholder(tf.int32, [self.batch_size])
-
-        label_onehot = tf.one_hot(self.discriminate_label, self.n_classes)
-
-        label_map = tf.reshape(
-            label_onehot,
-            [self.batch_size, 1, 1, self.n_classes])
-
         # Convolution 1
+        input_images = tf.cast(self.mask, tf.float32) * self.real_images 
+        input_images += tf.cast(1-self.mask, tf.float32) * self.generations
         conv1 = slim.conv2d(
-            self.discriminate_input,
+            input_images,
             num_outputs=32, kernel_size=[5, 5],
             stride=[2, 2], padding='Valid'
         )
         conv1_shape = conv1.get_shape()[1:3]
-        level1_label_map = label_map * tf.ones(
+        level1_label_map = self.label_map * tf.ones(
             [self.batch_size, conv1_shape[0], conv1_shape[1], self.n_classes]
         )
 
@@ -76,7 +74,7 @@ class DCGAN():
             stride=[2, 2], padding='Valid'
         )
         conv2_shape = conv2.get_shape()[1:3]
-        level2_label_map = label_map * tf.ones(
+        level2_label_map = self.label_map * tf.ones(
             [self.batch_size, conv2_shape[0], conv2_shape[1], self.n_classes]
         )
 
@@ -84,13 +82,33 @@ class DCGAN():
 
         # Level 3
         fc3 = slim.fully_connected(slim.flatten(level2), 200)
-        level3 = tf.concat([fc3, label_onehot], 1)
+        level3 = tf.concat([fc3, self.label_onehot], 1)
 
         # Level 4
         level4 = slim.fully_connected(level3, 2)
 
         self.discriminate_output = tf.nn.softmax(level4)
 
+    def _init_losses(self):
+        # generator loss
+        self.generator_loss = tf.nn.softmax_cross_entropy_with_logits(
+                logits=self.discriminate_output,
+                labels=tf.ones_like(self.discriminate_output))
+        generator_variables = list(filter(
+                lambda v:v.name.startswith('dcgan/generate'),
+                tf.trainable_variables()))
+        self.generator_train_step = tf.train.AdamOptimizer(1e-3).minimize(
+                self.generator_loss, var_list=generator_variables)
+
+        self.discriminator_loss = tf.nn.softmax_cross_entropy_with_logits(
+                logits=self.discriminate_output,
+                labels=self.mask_onehot)
+        discriminator_variables = list(filter(
+                lambda v:v.name.startswith('dcgan/discriminate'),
+                tf.trainable_variables()))
+        self.discriminator_train_step = tf.train.AdamOptimizer(1e-3).minimize(
+                self.discriminator_loss, var_list=generator_variables)
+        
 
 if __name__ == '__main__':
     DCGAN()
