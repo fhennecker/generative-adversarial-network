@@ -62,7 +62,7 @@ class DCGAN():
             [self.batch_size, conv1_shape[0], conv1_shape[1], self.n_classes]
         )
 
-        level1 = tf.nn.relu(tf.concat([conv1, level1_label_map], 3))
+        level1 = tf.concat([conv1, level1_label_map], 3)
 
         # Convolution 2
         conv2 = slim.conv2d(
@@ -75,7 +75,7 @@ class DCGAN():
             [self.batch_size, conv2_shape[0], conv2_shape[1], self.n_classes]
         )
 
-        level2 = tf.nn.relu(tf.concat([conv2, level2_label_map], 3))
+        level2 = tf.concat([conv2, level2_label_map], 3)
 
         # Level 3
         fc3 = slim.fully_connected(slim.flatten(level2), 200)
