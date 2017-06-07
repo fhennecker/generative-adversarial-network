@@ -47,21 +47,41 @@ class DCGAN():
 
         label_onehot = tf.one_hot(self.discriminate_label, self.n_classes)
 
+        label_map = tf.reshape(
+            label_onehot,
+            [self.batch_size, 1, 1, self.n_classes])
+
+        # Convolution 1
         conv1 = slim.conv2d(
             self.discriminate_input,
             num_outputs=32, kernel_size=[5, 5],
             stride=[2, 2], padding='Valid'
         )
-        level1 = tf.nn.relu(conv1)
+        conv1_shape = conv1.get_shape()[1:3]
+        level1_label_map = label_map * tf.ones(
+            [self.batch_size, conv1_shape[0], conv1_shape[1], self.n_classes]
+        )
 
+        level1 = tf.nn.relu(tf.concat([conv1, level1_label_map], 3))
+
+        # Convolution 2
         conv2 = slim.conv2d(
             level1,
             num_outputs=32, kernel_size=[5, 5],
             stride=[2, 2], padding='Valid'
         )
-        level2 = tf.nn.relu(conv2)
+        conv2_shape = conv2.get_shape()[1:3]
+        level2_label_map = label_map * tf.ones(
+            [self.batch_size, conv2_shape[0], conv2_shape[1], self.n_classes]
+        )
 
-        level3 = slim.fully_connected(level2, 200)
+        level2 = tf.nn.relu(tf.concat([conv2, level2_label_map], 3))
+
+        # Level 3
+        fc3 = slim.fully_connected(slim.flatten(level2), 200)
+        level3 = tf.concat([fc3, label_onehot], 1)
+
+        # Level 4
         level4 = slim.fully_connected(level3, 2)
 
         self.discriminate_output = tf.nn.softmax(level4)
