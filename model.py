@@ -52,9 +52,11 @@ class DCGAN():
 
 
     def _init_discriminate(self):
+        im_mask = tf.cast(tf.tile(
+                tf.reshape(self.mask, [self.batch_size, 1, 1, 1]),
+                [1, 28, 28, 1]), tf.float32)
+        input_images = self.real_images * im_mask + self.generations * (1-im_mask)
         # Convolution 1
-        input_images = tf.cast(self.mask, tf.float32) * self.real_images 
-        input_images += tf.cast(1-self.mask, tf.float32) * self.generations
         conv1 = slim.conv2d(
             input_images,
             num_outputs=32, kernel_size=[5, 5],
