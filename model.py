@@ -93,18 +93,20 @@ class DCGAN():
 
     def _init_losses(self):
         # generator loss
-        self.generator_loss = tf.nn.softmax_cross_entropy_with_logits(
-                logits=self.discriminate_output,
-                labels=tf.ones_like(self.discriminate_output))
+        self.generator_loss = tf.reduce_mean(
+                tf.nn.softmax_cross_entropy_with_logits(
+                    logits=self.discriminate_output,
+                    labels=tf.ones_like(self.discriminate_output)))
         generator_variables = list(filter(
                 lambda v:v.name.startswith('dcgan/generate'),
                 tf.trainable_variables()))
         self.generator_train_step = tf.train.AdamOptimizer(1e-3).minimize(
                 self.generator_loss, var_list=generator_variables)
 
-        self.discriminator_loss = tf.nn.softmax_cross_entropy_with_logits(
-                logits=self.discriminate_output,
-                labels=self.mask_onehot)
+        self.discriminator_loss = tf.reduce_mean(
+                tf.nn.softmax_cross_entropy_with_logits(
+                    logits=self.discriminate_output,
+                    labels=self.mask_onehot))
         discriminator_variables = list(filter(
                 lambda v:v.name.startswith('dcgan/discriminate'),
                 tf.trainable_variables()))
