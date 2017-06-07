@@ -4,12 +4,17 @@ import tensorflow.contrib.slim as slim
 
 class DCGAN():
     def __init__(self, batch_size=10, n_classes=10, image_size=28):
-        self.batch_size = batch_size
-        self.n_classes = n_classes
-        self.image_size = image_size
+        with tf.variable_scope("dcgan"):
+            self.batch_size = batch_size
+            self.n_classes = n_classes
+            self.image_size = image_size
 
-        self._init_generate()
-        self._init_discriminate()
+            with tf.variable_scope("generate"):
+                self._init_generate()
+            with tf.variable_scope("discriminate"):
+                self._init_discriminate()
+
+        print(self.generations.name)
 
     def _init_generate(self):
         self.random = tf.placeholder(tf.float32, [self.batch_size, 100])
