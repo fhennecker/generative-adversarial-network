@@ -1,6 +1,8 @@
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
+LEARNING_RATE = 0.0002
+
 
 class DCGAN():
     def __init__(self, batch_size=10, n_classes=10, image_size=28):
@@ -12,13 +14,13 @@ class DCGAN():
             self.label = tf.placeholder(tf.int32, [self.batch_size], name='label')
             self.label_onehot = tf.one_hot(self.label, self.n_classes)
             self.label_map = tf.reshape(
-                    self.label_onehot, [self.batch_size, 1, 1, self.n_classes])
+                self.label_onehot, [self.batch_size, 1, 1, self.n_classes])
 
             self.real_images = tf.placeholder(
                 tf.float32,
                 [self.batch_size, self.image_size, self.image_size, 1],
                 name='real_images')
-            
+
             self.mask = tf.placeholder(tf.int32, [self.batch_size], 'mask')
 
             with tf.variable_scope("generate"):
@@ -49,12 +51,11 @@ class DCGAN():
             3)
         self.generations = slim.conv2d_transpose(c1, 1, [5, 5], 2)
 
-
     def _init_discriminate(self):
         im_mask = tf.cast(tf.tile(
-                tf.reshape(self.mask, [self.batch_size, 1, 1, 1]),
-                [1, 28, 28, 1]), tf.float32)
-        input_images = self.real_images * im_mask + self.generations * (1-im_mask)
+            tf.reshape(self.mask, [self.batch_size, 1, 1, 1]),
+            [1, 28, 28, 1]), tf.float32)
+        input_images = self.real_images * im_mask + self.generations * (1 - im_mask)
         # Convolution 1
         conv1 = slim.conv2d(
             input_images,
@@ -93,26 +94,27 @@ class DCGAN():
     def _init_losses(self):
         # generator loss
         self.generator_loss = tf.reduce_mean(
-                tf.cast(1 - self.mask, tf.float32) * 
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    logits=self.discriminate_output,
-                    labels=tf.ones_like(self.discriminate_output)))
+            tf.cast(1 - self.mask, tf.float32) *
+            tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=self.discriminate_output,
+                labels=tf.ones_like(self.discriminate_output)))
         generator_variables = list(filter(
-                lambda v:v.name.startswith('dcgan/generate'),
-                tf.trainable_variables()))
-        self.generator_train_step = tf.train.AdamOptimizer(1e-3).minimize(
-                self.generator_loss, var_list=generator_variables)
+            lambda v: v.name.startswith('dcgan/generate'),
+            tf.trainable_variables()))
+        self.generator_train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(
+            self.generator_loss, var_list=generator_variables)
 
         self.discriminator_loss = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
-                    logits=tf.squeeze(self.discriminate_output),
-                    labels=tf.cast(self.mask, tf.float32)))
+            tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=tf.squeeze(self.discriminate_output),
+                labels=tf.cast(self.mask, tf.float32)))
         discriminator_variables = list(filter(
-                lambda v:v.name.startswith('dcgan/discriminate'),
-                tf.trainable_variables()))
-        self.discriminator_train_step = tf.train.AdamOptimizer(1e-3).minimize(
-                self.discriminator_loss, var_list=generator_variables)
-        
+            lambda v: v.name.startswith('dcgan/discriminate'),
+            tf.trainable_variables()))
+
+        self.discriminator_train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(
+            self.discriminator_loss, var_list=discriminator_variables)
+
 
 if __name__ == '__main__':
     DCGAN()
