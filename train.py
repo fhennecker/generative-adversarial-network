@@ -16,6 +16,7 @@ saver = tf.train.Saver()
 summary_writer = tf.summary.FileWriter('summaries/'+model_name)
 
 d_loss_summary = tf.summary.scalar('Losses/discriminator', model.discriminator_loss)
+g_loss_summary = tf.summary.scalar('Losses/generator', model.generator_loss)
 image_input_summary = tf.summary.image('Input', model.real_images)
 gen_image_summary = tf.summary.image('Generated', model.generations)
 
@@ -37,9 +38,10 @@ for i in range(int(1e4)):
             [d_loss_summary, image_input_summary, model.discriminator_train_step], 
             feed_dict=feed)
     g_loss, gensummary, _ = sess.run(
-            [model.generator_loss, gen_image_summary, model.generator_train_step],
+            [g_loss_summary, gen_image_summary, model.generator_train_step],
             feed_dict=feed)
     summary_writer.add_summary(summary, i)
+    summary_writer.add_summary(g_loss, i)
     summary_writer.add_summary(imsummary, i)
     summary_writer.add_summary(gensummary, i)
 
