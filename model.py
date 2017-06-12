@@ -87,13 +87,14 @@ class DCGAN():
         level3 = tf.concat([fc3, self.label_onehot], 1)
 
         # Level 4
-        level4 = slim.fully_connected(level3, 2)
+        self.discriminate_output = slim.fully_connected(level3, 2)
 
-        self.discriminate_output = tf.nn.softmax(level4)
+        #  self.discriminate_output = tf.nn.softmax(level4)
 
     def _init_losses(self):
         # generator loss
         self.generator_loss = tf.reduce_mean(
+                tf.cast(1 - self.mask, tf.float32) * 
                 tf.nn.softmax_cross_entropy_with_logits(
                     logits=self.discriminate_output,
                     labels=tf.ones_like(self.discriminate_output)))
