@@ -27,8 +27,8 @@ class DCGAN():
                 self._init_generate()
             with tf.variable_scope("discriminate"):
                 self._init_discriminate()
-
-            self._init_losses()
+            with tf.variable_scope("losses"):
+                self._init_losses()
 
     def _init_generate(self):
         self.random = tf.placeholder(tf.float32, [self.batch_size, 100])
@@ -97,23 +97,33 @@ class DCGAN():
             tf.cast(1 - self.mask, tf.float32) *
             tf.nn.sigmoid_cross_entropy_with_logits(
                 logits=self.discriminate_output,
-                labels=tf.ones_like(self.discriminate_output)))
+                labels=tf.ones_like(self.discriminate_output)),
+            name="generator_loss"
+        )
         generator_variables = list(filter(
             lambda v: v.name.startswith('dcgan/generate'),
-            tf.trainable_variables()))
+            tf.trainable_variables())
+        )
         self.generator_train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(
-            self.generator_loss, var_list=generator_variables)
+            self.generator_loss, var_list=generator_variables,
+            name="generator_train_step"
+        )
 
         self.discriminator_loss = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(
                 logits=tf.squeeze(self.discriminate_output),
-                labels=tf.cast(self.mask, tf.float32)))
+                labels=tf.cast(self.mask, tf.float32)
+            ),
+            name="discriminator_loss"
+        )
         discriminator_variables = list(filter(
             lambda v: v.name.startswith('dcgan/discriminate'),
             tf.trainable_variables()))
 
         self.discriminator_train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(
-            self.discriminator_loss, var_list=discriminator_variables)
+            self.discriminator_loss, var_list=discriminator_variables,
+            name="discriminator_train_step"
+        )
 
 
 if __name__ == '__main__':
