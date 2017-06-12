@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
 import os
+import sys
 
 from model import DCGAN
 
@@ -14,10 +15,16 @@ try:
 except FileExistsError:
     pass
 
+if len(sys.argv) < 2:
+    print("Provide model name ad first argument (e.g. %s my_model)" % sys.argv[0])
+    sys.exit(-1)
+else:
+    model_name = sys.argv[1]
+
+
 sess = tf.InteractiveSession()
 mnist = input_data.read_data_sets("MNIST_data/")
 
-model_name = "first"
 model = DCGAN()
 sess.run(tf.global_variables_initializer())
 
