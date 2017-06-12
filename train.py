@@ -22,7 +22,7 @@ gen_image_summary = tf.summary.image('Generated', model.generations)
 for i in range(int(1e4)):
     real, classes = mnist.train.next_batch(10)
     real = np.reshape(real, [10, 28, 28, 1])
-    mask = np.random.randint(0, 10, (10,))
+    mask = np.random.randint(0, 1, (10,))
     random = np.random.rand(10, 100)
 
     feed = {
