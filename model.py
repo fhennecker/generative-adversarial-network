@@ -20,7 +20,6 @@ class DCGAN():
                 name='real_images')
             
             self.mask = tf.placeholder(tf.int32, [self.batch_size], 'mask')
-            self.mask_onehot = tf.one_hot(self.mask, 2)
 
             with tf.variable_scope("generate"):
                 self._init_generate()
@@ -87,7 +86,7 @@ class DCGAN():
         level3 = tf.concat([fc3, self.label_onehot], 1)
 
         # Level 4
-        self.discriminate_output = slim.fully_connected(level3, 2)
+        self.discriminate_output = slim.fully_connected(level3, 1)
 
         #  self.discriminate_output = tf.nn.softmax(level4)
 
@@ -95,7 +94,7 @@ class DCGAN():
         # generator loss
         self.generator_loss = tf.reduce_mean(
                 tf.cast(1 - self.mask, tf.float32) * 
-                tf.nn.softmax_cross_entropy_with_logits(
+                tf.nn.sigmoid_cross_entropy_with_logits(
                     logits=self.discriminate_output,
                     labels=tf.ones_like(self.discriminate_output)))
         generator_variables = list(filter(
@@ -105,9 +104,9 @@ class DCGAN():
                 self.generator_loss, var_list=generator_variables)
 
         self.discriminator_loss = tf.reduce_mean(
-                tf.nn.softmax_cross_entropy_with_logits(
-                    logits=self.discriminate_output,
-                    labels=self.mask_onehot))
+                tf.nn.sigmoid_cross_entropy_with_logits(
+                    logits=tf.squeeze(self.discriminate_output),
+                    labels=tf.cast(self.mask, tf.float32)))
         discriminator_variables = list(filter(
                 lambda v:v.name.startswith('dcgan/discriminate'),
                 tf.trainable_variables()))
