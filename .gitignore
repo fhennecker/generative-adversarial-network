@@ -1,0 +1,10 @@
+MNIST_data/
+
+log/
+summaries/
+model/
+
+ve/
+ve3/
+venv/
+venv3/
