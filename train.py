@@ -29,7 +29,7 @@ model = DCGAN()
 sess.run(tf.global_variables_initializer())
 
 saver = tf.train.Saver()
-summary_writer = tf.summary.FileWriter('summaries/' + model_name)
+summary_writer = tf.summary.FileWriter('summaries/' + model_name, sess.graph)
 
 d_loss_summary = tf.summary.scalar('Losses/discriminator', model.discriminator_loss)
 g_loss_summary = tf.summary.scalar('Losses/generator', model.generator_loss)
