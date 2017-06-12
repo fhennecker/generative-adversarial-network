@@ -28,6 +28,7 @@ d_loss_summary = tf.summary.scalar('Losses/discriminator', model.discriminator_l
 g_loss_summary = tf.summary.scalar('Losses/generator', model.generator_loss)
 image_input_summary = tf.summary.image('Input', model.real_images)
 gen_image_summary = tf.summary.image('Generated', model.generations)
+summaries = tf.summary.merge_all()
 
 for i in range(int(1e4)):
     real, classes = mnist.train.next_batch(10)
@@ -42,16 +43,10 @@ for i in range(int(1e4)):
         model.random: random
     }
 
-    summary, imsummary, _ = sess.run(
-        [d_loss_summary, image_input_summary, model.discriminator_train_step],
-        feed_dict=feed)
-    g_loss, gensummary, _ = sess.run(
-        [g_loss_summary, gen_image_summary, model.generator_train_step],
+    summary, _, _ = sess.run([
+        summaries, model.discriminator_train_step, model.generator_train_step],
         feed_dict=feed)
     summary_writer.add_summary(summary, i)
-    summary_writer.add_summary(g_loss, i)
-    summary_writer.add_summary(imsummary, i)
-    summary_writer.add_summary(gensummary, i)
 
     if i % 100 == 0:
         saver.save(sess, os.path.join("model/", model_name + ".ckpt"), i)
