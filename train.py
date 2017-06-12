@@ -30,7 +30,7 @@ image_input_summary = tf.summary.image('Input', model.real_images)
 gen_image_summary = tf.summary.image('Generated', model.generations)
 summaries = tf.summary.merge_all()
 
-for i in range(int(1e4)):
+for i in range(int(1e6)):
     real, classes = mnist.train.next_batch(10)
     real = np.reshape(real, [10, 28, 28, 1])
     mask = np.random.randint(0, 1, (10,))
@@ -46,8 +46,9 @@ for i in range(int(1e4)):
     summary, _, _ = sess.run([
         summaries, model.discriminator_train_step, model.generator_train_step],
         feed_dict=feed)
-    summary_writer.add_summary(summary, i)
 
-    if i % 100 == 0:
+    if i % 50:
+        summary_writer.add_summary(summary, i)
+    if i % 5000 == 0:
         saver.save(sess, os.path.join("model/", model_name + ".ckpt"), i)
         print('Saved model.')
