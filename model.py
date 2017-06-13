@@ -1,5 +1,6 @@
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
+from tensorflow.contrib.layers import batch_norm
 
 LEARNING_RATE = 0.0002
 
@@ -34,21 +35,24 @@ class DCGAN():
         self.random = tf.placeholder(tf.float32, [self.batch_size, 100])
 
         # TODO batch normalise
-        h1 = slim.fully_connected(
+        h1 = batch_norm(slim.fully_connected(
             tf.concat([self.random, self.label_onehot], 1),
-            512)
-        h2 = slim.fully_connected(
+            512))
+
+        h2 = batch_norm(slim.fully_connected(
             tf.concat([h1, self.label_onehot], 1),
-            128 * 7 * 7)
+            128 * 7 * 7))
         h2 = tf.reshape(h2, [self.batch_size, 7, 7, 128])
         h2 = tf.concat(
             [h2, self.label_map * tf.ones([self.batch_size, 7, 7, self.n_classes])],
             3)
 
-        c1 = slim.conv2d_transpose(h2, 64, [5, 5], 2)
+        c1 = slim.conv2d_transpose(h2, 64, [5, 5], 2, normalizer_fn=slim.batch_norm)
         c1 = tf.concat(
             [c1, self.label_map * tf.ones([self.batch_size, 14, 14, self.n_classes])],
             3)
+
+        # No batchnorm here on purpose
         self.generations = tf.nn.sigmoid(
             slim.conv2d_transpose(c1, 1, [5, 5], 2))
 
@@ -56,12 +60,15 @@ class DCGAN():
         im_mask = tf.tile(
             tf.reshape(self.mask, [self.batch_size, 1, 1, 1]),
             [1, 28, 28, 1])
+
+        # No batchnorm here on purpose
         input_images = self.real_images * im_mask + self.generations * (1 - im_mask)
         # Convolution 1
         conv1 = slim.conv2d(
             input_images,
             num_outputs=32, kernel_size=[5, 5],
-            stride=[2, 2], padding='Valid'
+            stride=[2, 2], padding='Valid',
+            normalizer_fn=slim.batch_norm,
         )
         conv1_shape = conv1.get_shape()[1:3]
         level1_label_map = self.label_map * tf.ones(
@@ -74,7 +81,8 @@ class DCGAN():
         conv2 = slim.conv2d(
             level1,
             num_outputs=32, kernel_size=[5, 5],
-            stride=[2, 2], padding='Valid'
+            stride=[2, 2], padding='Valid',
+            normalizer_fn=slim.batch_norm,
         )
         conv2_shape = conv2.get_shape()[1:3]
         level2_label_map = self.label_map * tf.ones(
@@ -84,11 +92,11 @@ class DCGAN():
         level2 = tf.concat([conv2, level2_label_map], 3)
 
         # Level 3
-        fc3 = slim.fully_connected(slim.flatten(level2), 200)
+        fc3 = batch_norm(slim.fully_connected(slim.flatten(level2), 200))
         level3 = tf.concat([fc3, self.label_onehot], 1)
 
         # Level 4
-        self.discriminate_output = slim.fully_connected(level3, 1)
+        self.discriminate_output = batch_norm(slim.fully_connected(level3, 1))
 
         #  self.discriminate_output = tf.nn.softmax(level4)
 
