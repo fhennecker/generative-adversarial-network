@@ -87,7 +87,7 @@ class DCGAN():
         level3 = tf.concat([fc3, self.label_onehot], 1)
 
         # Level 4
-        self.discriminate_output = slim.fully_connected(level3, 1)
+        self.discriminate_output = slim.fully_connected(level3, 2)
 
         #  self.discriminate_output = tf.nn.softmax(level4)
 
@@ -96,9 +96,10 @@ class DCGAN():
             # generator loss
             self.generator_loss = tf.reduce_mean(
                 (1 - self.mask) *
-                tf.nn.sigmoid_cross_entropy_with_logits(
+                tf.nn.softmax_cross_entropy_with_logits(
                     logits=self.discriminate_output,
-                    labels=tf.ones_like(self.discriminate_output)),
+                    labels=tf.one_hot(
+                        tf.ones((self.batch_size), dtype=tf.int32), 2)),
                 name="loss"
             )
             generator_variables = list(filter(
@@ -112,9 +113,9 @@ class DCGAN():
 
         with tf.variable_scope("discriminator"):
             self.discriminator_loss = tf.reduce_mean(
-                tf.nn.sigmoid_cross_entropy_with_logits(
+                tf.nn.softmax_cross_entropy_with_logits(
                     logits=tf.squeeze(self.discriminate_output),
-                    labels=self.mask
+                    labels=tf.one_hot(tf.cast(self.mask, tf.int32), 2)
                 ),
                 name="loss"
             )
