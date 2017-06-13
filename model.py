@@ -81,10 +81,10 @@ class DCGAN():
         with tf.variable_scope("generator"):
             # generator loss
             self.generator_loss = tf.reduce_mean(
-                (1 - self.mask) *
                 tf.nn.sigmoid_cross_entropy_with_logits(
-                    logits=self.discriminate_output,
-                    labels=tf.ones_like(self.discriminate_output)),
+                    logits=tf.reshape(self.discriminate_output, (self.batch_size,)),
+                    labels=tf.reshape(1 - self.mask, (self.batch_size,)),
+                ),
                 name="loss"
             )
             generator_variables = list(filter(
