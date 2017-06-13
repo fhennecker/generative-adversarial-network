@@ -116,7 +116,7 @@ class DCGAN():
             )
             self.generator_train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(
                 self.generator_loss, var_list=generator_variables,
-                name="train_step"
+                beta1=0.5, name="train_step",
             )
 
         with tf.variable_scope("discriminator"):
@@ -133,7 +133,7 @@ class DCGAN():
 
             self.discriminator_train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(
                 self.discriminator_loss, var_list=discriminator_variables,
-                name="train_step"
+                beta1=0.5, name="train_step",
             )
 
 
