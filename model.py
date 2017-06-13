@@ -64,12 +64,7 @@ class DCGAN():
             stride=[2, 2], padding='Valid',
             normalizer_fn=slim.batch_norm,
         )
-        conv1_shape = conv1.get_shape()[1:3]
-        level1_label_map = self.label_map * tf.ones(
-            [self.batch_size, conv1_shape[0], conv1_shape[1], self.n_classes]
-        )
-
-        level1 = tf.concat([conv1, level1_label_map], 3)
+        level1 = conv1
 
         # Convolution 2
         conv2 = slim.conv2d(
@@ -78,8 +73,8 @@ class DCGAN():
             stride=[2, 2], padding='Valid',
             normalizer_fn=slim.batch_norm,
         )
-
         level2 = conv2
+
         # Level 3
         fc3 = batch_norm(slim.fully_connected(slim.flatten(level2), 200))
         level3 = tf.concat([fc3, self.label_onehot], 1)
