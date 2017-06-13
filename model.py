@@ -54,7 +54,7 @@ class DCGAN():
 
         # No batchnorm here on purpose
         self.generations = tf.nn.sigmoid(
-            slim.conv2d_transpose(c1, 1, [5, 5], 2))
+            slim.conv2d_transpose(c1, 1, [5, 5], 2, activation_fn=None))
 
     def _init_discriminate(self):
         im_mask = tf.tile(
