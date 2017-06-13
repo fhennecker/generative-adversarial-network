@@ -49,7 +49,8 @@ class DCGAN():
         c1 = tf.concat(
             [c1, self.label_map * tf.ones([self.batch_size, 14, 14, self.n_classes])],
             3)
-        self.generations = slim.conv2d_transpose(c1, 1, [5, 5], 2)
+        self.generations = tf.nn.sigmoid(
+            slim.conv2d_transpose(c1, 1, [5, 5], 2))
 
     def _init_discriminate(self):
         im_mask = tf.tile(
