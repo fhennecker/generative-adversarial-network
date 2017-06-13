@@ -6,7 +6,7 @@ LEARNING_RATE = 0.0002
 
 
 class DCGAN():
-    def __init__(self, batch_size=10, n_classes=10, image_size=28):
+    def __init__(self, batch_size=128, n_classes=10, image_size=28):
         with tf.variable_scope("dcgan"):
             self.batch_size = batch_size
             self.n_classes = n_classes
