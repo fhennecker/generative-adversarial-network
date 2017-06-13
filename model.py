@@ -83,7 +83,7 @@ class DCGAN():
             self.generator_loss = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(
                     logits=tf.reshape(self.discriminate_output, (self.batch_size,)),
-                    labels=tf.reshape(1 - self.mask, (self.batch_size,)),
+                    labels=self.mask,
                 ),
                 name="loss"
             )
