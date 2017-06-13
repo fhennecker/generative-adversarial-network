@@ -54,9 +54,9 @@ for i in range(int(1e6)):
         model.random: random_array
     }
 
-    summary, _, _ = sess.run([
-        # summaries, model.discriminator_train_step, model.generator_train_step],
-        summaries, model.discriminator_train_step],
+    summary, _, = sess.run(
+        # [summaries, model.discriminator_train_step, model.generator_train_step],
+        [summaries, model.discriminator_train_step],
         feed_dict=feed)
 
     if i % 50:
