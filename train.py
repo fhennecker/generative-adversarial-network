@@ -38,10 +38,10 @@ gen_image_summary = tf.summary.image('Generated', model.generations)
 summaries = tf.summary.merge_all()
 
 for i in range(int(1e6)):
-    real, classes = mnist.train.next_batch(10)
-    real = np.reshape(real, [10, 28, 28, 1])
-    mask = np.random.randint(0, 2, (10,))
-    random = np.random.rand(10, 100)
+    real, classes = mnist.train.next_batch(model.batch_size)
+    real = np.reshape(real, [model.batch_size, 28, 28, 1])
+    mask = np.random.randint(0, 2, (model.batch_size,))
+    random = np.random.rand(model.batch_size, 100)
 
     feed = {
         model.label: classes,
