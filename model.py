@@ -74,13 +74,8 @@ class DCGAN():
             normalizer_fn=slim.batch_norm,
         )
         level2 = conv2
-
         # Level 3
-        fc3 = batch_norm(slim.fully_connected(slim.flatten(level2), 200))
-        level3 = tf.concat([fc3, self.label_onehot], 1)
-
-        # Level 4
-        self.discriminate_output = batch_norm(slim.fully_connected(level3, 1))
+        self.discriminate_output = batch_norm(slim.fully_connected(slim.flatten(level2), 1))
 
     def _init_losses(self):
         with tf.variable_scope("generator"):
