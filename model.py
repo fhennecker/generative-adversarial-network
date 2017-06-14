@@ -75,7 +75,8 @@ class DCGAN():
         )
         level2 = conv2
         # Level 3
-        self.discriminate_output = batch_norm(slim.fully_connected(slim.flatten(level2), 1))
+        self.discriminate_output = slim.fully_connected(slim.flatten(level2), 1,
+                activation_fn=None)
 
     def _init_losses(self):
         with tf.variable_scope("generator"):
