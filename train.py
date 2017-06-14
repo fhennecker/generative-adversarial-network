@@ -56,6 +56,12 @@ for i in range(int(1e6)):
 
     random_array = np.random.rand(model.batch_size, 100)
 
+    # when writing to tensorboard
+    # generate all the digits, ordered in the 10 first items of the batch
+    if i % 50:
+        mask[:10] = 0
+        classes[:10] = list(range(10))
+
     feed = {
         model.label: classes,
         model.real_images: real,
