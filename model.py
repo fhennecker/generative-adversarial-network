@@ -76,7 +76,7 @@ class DCGAN():
         level2 = conv2
         # Level 3
         self.discriminate_output = slim.fully_connected(
-            slim.flatten(level2), 1,
+            tf.concat((slim.flatten(level2), self.label_onehot), 1), 1,
             activation_fn=None)
 
     def _init_losses(self):
