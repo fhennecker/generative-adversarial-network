@@ -3,7 +3,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
 import os
 import sys
-import random
+# import random
 
 from model import DCGAN
 
@@ -42,8 +42,8 @@ for i in range(int(1e6)):
     real, classes = mnist.train.next_batch(model.batch_size)
     real = np.reshape(real, [model.batch_size, 28, 28, 1])
 
-    # mask = np.random.randint(0, 2, (model.batch_size,))
-    mask = np.full(shape=(model.batch_size,), fill_value=random.randint(0, 1))
+    mask = np.random.randint(0, 2, (model.batch_size,))
+    # mask = np.full(shape=(model.batch_size,), fill_value=random.randint(0, 1))
 
     random_array = np.random.rand(model.batch_size, 100)
 
