@@ -42,11 +42,18 @@ class DCGAN():
         h2 = batch_norm(slim.fully_connected(h1, 128 * 7 * 7))
         h2 = tf.reshape(h2, [self.batch_size, 7, 7, 128])
 
-        c1 = slim.conv2d_transpose(h2, 64, [5, 5], 2, normalizer_fn=slim.batch_norm)
+        c1 = slim.conv2d_transpose(
+            h2, 64, [5, 5], 2, normalizer_fn=slim.batch_norm,
+            padding="SAME",
+        )
 
         # No batchnorm here on purpose
         self.generations = tf.nn.sigmoid(
-            slim.conv2d_transpose(c1, 1, [5, 5], 2, activation_fn=None))
+            slim.conv2d_transpose(
+                c1, 1, [5, 5], 2, activation_fn=None,
+                padding="SAME",
+            )
+        )
 
     def _init_discriminate(self):
         im_mask = tf.tile(
@@ -61,7 +68,7 @@ class DCGAN():
         conv1 = slim.conv2d(
             input_images,
             num_outputs=32, kernel_size=[5, 5],
-            stride=[2, 2], padding='Valid',
+            stride=[2, 2], padding='SAME',
             normalizer_fn=slim.batch_norm,
         )
         level1 = conv1
@@ -70,7 +77,7 @@ class DCGAN():
         conv2 = slim.conv2d(
             level1,
             num_outputs=32, kernel_size=[5, 5],
-            stride=[2, 2], padding='Valid',
+            stride=[2, 2], padding='SAME',
             normalizer_fn=slim.batch_norm,
         )
         level2 = conv2
