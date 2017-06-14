@@ -80,10 +80,15 @@ class DCGAN():
         level2 = conv2
 
         # Level 3 : Fully connected
-        level3 = slim.fully_connected(
+        level3 = slim.fully_connected(  # Make a [1000] fc
             slim.flatten(level2),
-            100,
+            100 * self.n_classes,
         )
+
+        # reshape to [10, 100]
+        level3 = tf.reshape(level3, (self.batch_size, self.n_classes, 100))
+        # deactivate all the rows except one
+        level3 = level3 * tf.cast(tf.reshape(self.label_onehot, (self.batch_size, self.n_classes, 1)), tf.float32)
 
         self.discriminate_output = slim.fully_connected(
             slim.flatten(level3),
