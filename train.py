@@ -35,6 +35,7 @@ summary_writer = tf.summary.FileWriter('summaries/' + model_name, sess.graph)
 d_loss_summary = tf.summary.scalar('Losses/discriminator', model.discriminator_loss)
 g_loss_summary = tf.summary.scalar('Losses/generator', model.generator_loss)
 gen_image_summary = tf.summary.image('Generated', model.generations, max_outputs=10)
+random_summary = tf.summary.image('Random', tf.reshape(model.random, (128, 10, 10, 1)), max_outputs=10)
 summaries = tf.summary.merge_all()
 
 ONLY_LABEL = 2
@@ -54,13 +55,14 @@ for i in range(int(1e6)):
     mask = np.random.randint(0, 2, (model.batch_size,))
     # mask = np.full(shape=(model.batch_size,), fill_value=random.randint(0, 1))
 
-    random_array = np.random.rand(model.batch_size, 100)
-
     # when writing to tensorboard
     # generate all the digits, ordered in the 10 first items of the batch
     if i % 50:
         mask[:10] = 0
         classes[:10] = list(range(10))
+
+    generator_input_classes = np.reshape(np.repeat(np.eye(np.max(classes) + 1)[classes], 10), (model.batch_size, 100))
+    random_array = np.random.rand(model.batch_size, 100) * 0.1 + generator_input_classes
 
     feed = {
         model.label: classes,
