@@ -96,8 +96,8 @@ class DCGAN():
         level3 = tf.concat([fc3, self.label_onehot], 1)
 
         # Level 4
-        self.discriminate_output = batch_norm(slim.fully_connected(level3, 1,
-            activation_fn=None))
+        self.discriminate_output = slim.fully_connected(level3, 1,
+            activation_fn=None)
 
         #  self.discriminate_output = tf.nn.softmax(level4)
 
