@@ -3,9 +3,12 @@ from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
 import os
 import sys
-# import random
+import random
 
 from model import DCGAN
+
+ONLY_LABEL = None
+FULL_MASK = False
 
 try:
     os.mkdir("summaries")
@@ -37,28 +40,32 @@ g_loss_summary = tf.summary.scalar('Losses/generator', model.generator_loss)
 gen_image_summary = tf.summary.image('Generated', model.generations, max_outputs=10)
 summaries = tf.summary.merge_all()
 
-ONLY_LABEL = 2
 X = mnist.train.images[mnist.train.labels == ONLY_LABEL]
 Y = np.full(shape=(X.shape[0],), fill_value=ONLY_LABEL)
 
 for i in range(int(1e6)):
-    # Select from full MNIST
-    real, classes = mnist.train.next_batch(model.batch_size)
 
-    # # Select from ONLY_LABEL
-    # real = X[np.random.randint(X.shape[0], size=model.batch_size), :]
-    # classes = np.full(shape=(model.batch_size,), fill_value=ONLY_LABEL)
+    if ONLY_LABEL:
+        # Select from ONLY_LABEL
+        real = X[np.random.randint(X.shape[0], size=model.batch_size), :]
+        classes = np.full(shape=(model.batch_size,), fill_value=ONLY_LABEL)
+    else:
+        # Select from full MNIST
+        real, classes = mnist.train.next_batch(model.batch_size)
 
+    # Resize real to a 2D array (was a 1D vector)
     real = np.reshape(real, [model.batch_size, 28, 28, 1])
 
-    mask = np.random.randint(0, 2, (model.batch_size,))
-    # mask = np.full(shape=(model.batch_size,), fill_value=random.randint(0, 1))
+    if FULL_MASK:
+        mask = np.full(shape=(model.batch_size,), fill_value=random.randint(0, 1))
+    else:
+        mask = np.random.randint(0, 2, (model.batch_size,))
 
     random_array = np.random.rand(model.batch_size, 100)
 
-    # when writing to tensorboard
-    # generate all the digits, ordered in the 10 first items of the batch
     if i % 50:
+        # when writing to tensorboard generate all the digits,
+        # ordered in the 10 first items of the batch
         mask[:10] = 0
         classes[:10] = list(range(10))
 
