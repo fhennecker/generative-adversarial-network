@@ -34,10 +34,7 @@ class DCGAN():
     def _init_generate(self):
         self.random = tf.placeholder(tf.float32, [self.batch_size, 100])
 
-        # TODO batch normalise
-        h1 = batch_norm(slim.fully_connected(
-            tf.concat([self.random, self.label_onehot], 1),
-            512))
+        h1 = batch_norm(slim.fully_connected(self.random, 512))
 
         h2 = batch_norm(slim.fully_connected(h1, 128 * 7 * 7))
         h2 = tf.reshape(h2, [self.batch_size, 7, 7, 128])
@@ -81,10 +78,18 @@ class DCGAN():
             normalizer_fn=slim.batch_norm,
         )
         level2 = conv2
-        # Level 3
+
+        # Level 3 : Fully connected
+        level3 = slim.fully_connected(
+            slim.flatten(level2),
+            100,
+        )
+
         self.discriminate_output = slim.fully_connected(
-            tf.concat((slim.flatten(level2), self.label_onehot), 1), 1,
-            activation_fn=None)
+            slim.flatten(level3),
+            1,
+            activation_fn=None
+        )
 
     def _init_losses(self):
         with tf.variable_scope("generator"):
