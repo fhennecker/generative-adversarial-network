@@ -38,8 +38,18 @@ image_input_summary = tf.summary.image('Input', model.real_images)
 gen_image_summary = tf.summary.image('Generated', model.generations)
 summaries = tf.summary.merge_all()
 
+ONLY_LABEL = 2
+X = mnist.train.images[mnist.train.labels == ONLY_LABEL]
+Y = np.full(shape=(X.shape[0],), fill_value=ONLY_LABEL)
+
 for i in range(int(1e6)):
-    real, classes = mnist.train.next_batch(model.batch_size)
+    # # Select from full MNIST
+    # real, classes = mnist.train.next_batch(model.batch_size)
+
+    # Select from ONLY_LABEL
+    real = X[np.random.randint(X.shape[0], size=model.batch_size), :]
+    classes = np.full(shape=(model.batch_size,), fill_value=ONLY_LABEL)
+
     real = np.reshape(real, [model.batch_size, 28, 28, 1])
 
     mask = np.random.randint(0, 2, (model.batch_size,))
