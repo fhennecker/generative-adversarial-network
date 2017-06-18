@@ -34,7 +34,9 @@ class DCGAN():
     def _init_generate(self):
         self.random = tf.placeholder(tf.float32, [self.batch_size, 100])
 
-        h1 = batch_norm(slim.fully_connected(self.random, 512))
+        input_layer = tf.concat([self.random, self.label_onehot], axis=1)
+
+        h1 = batch_norm(slim.fully_connected(input_layer, 512))
 
         h2 = batch_norm(slim.fully_connected(h1, 128 * 7 * 7))
         h2 = tf.reshape(h2, [self.batch_size, 7, 7, 128])
@@ -86,7 +88,7 @@ class DCGAN():
         )
 
         self.discriminate_output = slim.fully_connected(
-            slim.flatten(level3),
+            tf.concat([slim.flatten(level3), self.label_onehot], axis=1),
             1,
             activation_fn=None
         )
