@@ -34,7 +34,8 @@ class DCGAN():
     def _init_generate(self):
         self.random = tf.placeholder(tf.float32, [self.batch_size, 100])
 
-        input_layer = tf.concat([self.random, self.label_onehot], axis=1)
+        input_layer = self.random
+        # input_layer = tf.concat([self.random, self.label_onehot], axis=1)
 
         h1 = batch_norm(slim.fully_connected(input_layer, 512))
 
@@ -87,8 +88,8 @@ class DCGAN():
             100,
         )
 
-        level3 = tf.nn.dropout(level3, 0.9)
-        level3 = tf.concat([slim.flatten(level3), self.label_onehot], axis=1)
+        level3 = slim.dropout(level3, 0.5)
+        # level3 = tf.concat([slim.flatten(level3), self.label_onehot], axis=1)
 
         self.discriminate_output = slim.fully_connected(
             level3,
