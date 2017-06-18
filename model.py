@@ -37,7 +37,9 @@ class DCGAN():
         input_layer = self.random
         # input_layer = tf.concat([self.random, self.label_onehot], axis=1)
 
-        h1 = batch_norm(slim.fully_connected(input_layer, 512))
+        h1 = slim.fully_connected(input_layer, 512)
+        h1 = slim.dropout(h1, 0.5)
+        h1 = batch_norm(h1)
 
         h2 = batch_norm(slim.fully_connected(h1, 128 * 7 * 7))
         h2 = tf.reshape(h2, [self.batch_size, 7, 7, 128])
