@@ -27,10 +27,11 @@ else:
 
 
 sess = tf.InteractiveSession()
-mnist = input_data.read_data_sets("MNIST_data/")
 
 model = DCGAN()
 sess.run(tf.global_variables_initializer())
+
+mnist = input_data.read_data_sets("MNIST_data/")
 
 saver = tf.train.Saver()
 summary_writer = tf.summary.FileWriter('summaries/' + model_name, sess.graph)
@@ -40,7 +41,7 @@ g_loss_summary = tf.summary.scalar('Losses/generator', model.generator_loss)
 gen_image_summary = tf.summary.image('Generated', model.generations, max_outputs=10)
 summaries = tf.summary.merge_all()
 
-X = mnist.train.images[mnist.train.labels == ONLY_LABEL]
+X = mnist.train.images[mnist.train.labels == (ONLY_LABEL or 1)]
 Y = np.full(shape=(X.shape[0],), fill_value=ONLY_LABEL)
 
 for i in range(int(1e6)):
