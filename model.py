@@ -87,8 +87,11 @@ class DCGAN():
             100,
         )
 
+        level3 = tf.nn.dropout(level3, 0.9)
+        level3 = tf.concat([slim.flatten(level3), self.label_onehot], axis=1)
+
         self.discriminate_output = slim.fully_connected(
-            tf.concat([slim.flatten(level3), self.label_onehot], axis=1),
+            level3,
             1,
             activation_fn=None
         )
