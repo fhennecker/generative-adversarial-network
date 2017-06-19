@@ -70,11 +70,18 @@ for i in range(int(1e6)):
         mask[:10] = 0
         classes[:10] = list(range(10))
 
+    min_lr = 0.00001
+    max_lr = 0.1
+    anneal_steps = 1e5
+    learning_rate = max(min_lr, max_lr-(max_lr-min_lr)*(i/anneal_steps))
+    
     feed = {
         model.label: classes,
         model.real_images: real,
         model.mask: mask,
-        model.random: random_array
+        model.random: random_array,
+        model.gen_learning_rate: learning_rate,
+        model.disc_learning_rate: learning_rate,
     }
 
     summary, _, _ = sess.run(
