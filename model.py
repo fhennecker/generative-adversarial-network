@@ -34,8 +34,7 @@ class DCGAN():
     def _init_generate(self):
         self.random = tf.placeholder(tf.float32, [self.batch_size, 100])
 
-        input_layer = self.random
-        # input_layer = tf.concat([self.random, self.label_onehot], axis=1)
+        input_layer = tf.concat([self.random, self.label_onehot], axis=1)
 
         h1 = slim.fully_connected(input_layer, 512)
         h1 = slim.dropout(h1, 0.5)
@@ -66,9 +65,14 @@ class DCGAN():
         # No batchnorm here on purpose
         input_images = self.real_images * im_mask + self.generations * (1 - im_mask)
 
+        classes = tf.tile(
+            tf.reshape(self.label_onehot, [self.batch_size, 1, 1, self.n_classes]),
+            [1, 28, 28, 1]
+        )
+
         # Convolution 1
         conv1 = slim.conv2d(
-            input_images,
+            tf.concat((input_images, classes), axis=3),
             num_outputs=32, kernel_size=[5, 5],
             stride=[2, 2], padding='SAME',
             normalizer_fn=slim.batch_norm,
