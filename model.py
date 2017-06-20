@@ -7,6 +7,8 @@ LEARNING_RATE = 0.0002
 
 class DCGAN():
     def __init__(self, batch_size=128, n_classes=10, image_size=28):
+        assert batch_size >= image_size, "Batch size must be higher than n_classes due to the summary"
+
         with tf.variable_scope("dcgan"):
             self.batch_size = batch_size
             self.n_classes = n_classes
@@ -34,8 +36,8 @@ class DCGAN():
     def _init_generate(self):
         self.random = tf.placeholder(tf.float32, [self.batch_size, 100])
 
-        input_layer = self.random
-        # input_layer = tf.concat([self.random, self.label_onehot], axis=1)
+        # input_layer = self.random
+        input_layer = tf.concat([self.random, self.label_onehot], axis=1)
 
         h1 = slim.fully_connected(input_layer, 512)
         h1 = slim.dropout(h1, 0.5)
@@ -60,7 +62,7 @@ class DCGAN():
     def _init_discriminate(self):
         im_mask = tf.tile(
             tf.reshape(self.mask, [self.batch_size, 1, 1, 1]),
-            [1, 28, 28, 1]
+            [1, self.image_size, self.image_size, 1]
         )
 
         # No batchnorm here on purpose
@@ -95,7 +97,7 @@ class DCGAN():
 
         self.discriminate_output = slim.fully_connected(
             level3,
-            1,
+            self.n_classes,
             activation_fn=None
         )
 
@@ -103,11 +105,12 @@ class DCGAN():
         with tf.variable_scope("generator"):
             # generator loss
             self.generator_loss = tf.reduce_mean(
-                (1 - self.mask) *
+                tf.reshape((1 - self.mask), [self.batch_size, 1]) *
                 tf.nn.sigmoid_cross_entropy_with_logits(
                     logits=self.discriminate_output,
-                    labels=tf.ones_like(self.discriminate_output)),
-                name="loss"
+                    labels=self.label_onehot,
+                    name="loss"
+                )
             )
             generator_variables = list(filter(
                 lambda v: v.name.startswith('dcgan/generate'),
@@ -119,10 +122,12 @@ class DCGAN():
             )
 
         with tf.variable_scope("discriminator"):
+            discriminator_labels = tf.reshape(self.mask, [self.batch_size, 1]) * self.label_onehot
+
             self.discriminator_loss = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(
                     logits=tf.squeeze(self.discriminate_output),
-                    labels=self.mask
+                    labels=discriminator_labels
                 ),
                 name="loss"
             )
