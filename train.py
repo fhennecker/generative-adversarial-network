@@ -4,6 +4,7 @@ import numpy as np
 import os
 import sys
 import random
+import cifar
 
 from model import DCGAN
 
@@ -24,13 +25,15 @@ if len(sys.argv) < 2:
 else:
     model_name = sys.argv[1]
 
+#  mnist = input_data.read_data_sets("MNIST_data/")
+cifar = cifar.CIFAR('./cifar/cifar-10-batches-py/')
+image_size, n_channels = 32, 3
 
 sess = tf.InteractiveSession()
 
-model = DCGAN()
+model = DCGAN(image_size=image_size, image_depth=n_channels)
 sess.run(tf.global_variables_initializer())
 
-mnist = input_data.read_data_sets("MNIST_data/")
 
 saver = tf.train.Saver()
 summary_writer = tf.summary.FileWriter('summaries/' + model_name, sess.graph)
@@ -43,7 +46,8 @@ summaries = tf.summary.merge_all()
 for i in range(int(1e6)):
 
     # Select from full MNIST
-    real, classes = mnist.train.next_batch(model.batch_size)
+    #  real, classes = mnist.train.next_batch(model.batch_size)
+    real, classes = cifar.batch(model.batch_size)
 
     # Resize real to a 2D array (was a 1D vector)
     real = np.reshape(real, [model.batch_size, model.image_size, model.image_size, model.image_depth])
