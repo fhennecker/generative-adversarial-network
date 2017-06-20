@@ -70,11 +70,11 @@ for i in range(int(1e6)):
         mask[:10] = 0
         classes[:10] = list(range(10))
 
-    min_lr = 0.00001
+    min_lr = 0.000001
     max_lr = 0.001
     #  anneal_steps = 1e5
     #  learning_rate = max(min_lr, max_lr-(max_lr-min_lr)*(i/anneal_steps))
-    learning_rate = max(min_lr, max_lr*(0.9999**i))
+    learning_rate = max(min_lr, max_lr*(0.99999**i))
     
     feed = {
         model.label: classes,
