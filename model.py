@@ -76,7 +76,6 @@ class DCGAN():
             num_outputs=32, kernel_size=[5, 5],
             stride=[2, 2], padding='SAME',
             normalizer_fn=slim.batch_norm,
-            scope='bite'
         )
         level1 = conv1
 
