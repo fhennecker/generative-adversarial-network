@@ -14,6 +14,7 @@ class DCGAN():
             self.n_classes = n_classes
             self.image_size = image_size
             self.image_depth = image_depth
+            self.conv_size = int(self.image_size / 4)
 
             self.label = tf.placeholder(tf.int32, [self.batch_size], name='label')
             self.label_onehot = tf.one_hot(self.label, self.n_classes)
@@ -44,8 +45,8 @@ class DCGAN():
         h1 = slim.dropout(h1, 0.5)
         h1 = batch_norm(h1)
 
-        h2 = batch_norm(slim.fully_connected(h1, 128 * 7 * 7))
-        h2 = tf.reshape(h2, [self.batch_size, 7, 7, 128])
+        h2 = batch_norm(slim.fully_connected(h1, 128 * self.conv_size * self.conv_size))
+        h2 = tf.reshape(h2, [self.batch_size, self.conv_size, self.conv_size, 128])
 
         c1 = slim.conv2d_transpose(
             h2, 64, [5, 5], 2, normalizer_fn=slim.batch_norm,
