@@ -7,6 +7,8 @@ LEARNING_RATE = 0.0002
 
 class DCGAN():
     def __init__(self, batch_size=128, n_classes=10, image_size=28):
+        assert batch_size >= image_size, "Batch size must be higher than n_classes due to the summary"
+
         with tf.variable_scope("dcgan"):
             self.batch_size = batch_size
             self.n_classes = n_classes
@@ -60,7 +62,7 @@ class DCGAN():
     def _init_discriminate(self):
         im_mask = tf.tile(
             tf.reshape(self.mask, [self.batch_size, 1, 1, 1]),
-            [1, 28, 28, 1]
+            [1, self.image_size, self.image_size, 1]
         )
 
         # No batchnorm here on purpose
@@ -95,7 +97,7 @@ class DCGAN():
 
         self.discriminate_output = slim.fully_connected(
             level3,
-            10,
+            self.n_classes,
             activation_fn=None
         )
 
