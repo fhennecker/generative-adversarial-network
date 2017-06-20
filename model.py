@@ -6,13 +6,14 @@ LEARNING_RATE = 0.0002
 
 
 class DCGAN():
-    def __init__(self, batch_size=128, n_classes=10, image_size=28):
+    def __init__(self, batch_size=128, n_classes=10, image_size=28, image_depth=1):
         assert batch_size >= image_size, "Batch size must be higher than n_classes due to the summary"
 
         with tf.variable_scope("dcgan"):
             self.batch_size = batch_size
             self.n_classes = n_classes
             self.image_size = image_size
+            self.image_depth = image_depth
 
             self.label = tf.placeholder(tf.int32, [self.batch_size], name='label')
             self.label_onehot = tf.one_hot(self.label, self.n_classes)
@@ -21,7 +22,7 @@ class DCGAN():
 
             self.real_images = tf.placeholder(
                 tf.float32,
-                [self.batch_size, self.image_size, self.image_size, 1],
+                [self.batch_size, self.image_size, self.image_size, self.image_depth],
                 name='real_images')
 
             self.mask = tf.placeholder(tf.float32, [self.batch_size], 'mask')
@@ -54,7 +55,7 @@ class DCGAN():
         # No batchnorm here on purpose
         self.generations = tf.nn.sigmoid(
             slim.conv2d_transpose(
-                c1, 1, [5, 5], 2, activation_fn=None,
+                c1, self.image_depth, [5, 5], 2, activation_fn=None,
                 padding="SAME",
             )
         )
@@ -62,7 +63,7 @@ class DCGAN():
     def _init_discriminate(self):
         im_mask = tf.tile(
             tf.reshape(self.mask, [self.batch_size, 1, 1, 1]),
-            [1, self.image_size, self.image_size, 1]
+            [1, self.image_size, self.image_size, self.image_depth]
         )
 
         # No batchnorm here on purpose

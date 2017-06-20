@@ -46,7 +46,7 @@ for i in range(int(1e6)):
     real, classes = mnist.train.next_batch(model.batch_size)
 
     # Resize real to a 2D array (was a 1D vector)
-    real = np.reshape(real, [model.batch_size, model.image_size, model.image_size, 1])
+    real = np.reshape(real, [model.batch_size, model.image_size, model.image_size, model.image_depth])
 
     if FULL_MASK:
         mask = np.full(shape=(model.batch_size,), fill_value=random.randint(0, 1))
