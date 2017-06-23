@@ -74,6 +74,6 @@ for i in range(int(1e6)):
 
     if i % 50:
         summary_writer.add_summary(summary, i)
-    if i % 5000 == 0:
+    if i % 100 == 0:
         saver.save(sess, os.path.join("model/", model_name + ".ckpt"), i)
         print('Saved model.')
